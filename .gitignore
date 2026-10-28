@@ -1,0 +1,17 @@
+# colcon の生成物
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+__pycache__/
+*.pyc
+# 秘密情報
+.env
+.env.*
+*.pem
+*.key
+# 学習済みモデルの重み（大きいので必要なら別途配布）
+*.pt
+# テスト実行時のログ・一時的な確認画像
+tools/test_logs/
+/camera_check.png
+/yolo_check.png

@@ -1,0 +1,7 @@
+# このコードは Linux（Docker コンテナ）で動かすため、改行は常に LF にする
+# （Windows の CRLF になると、シェルスクリプトなどが動かなくなる）
+* text=auto eol=lf
+*.png binary
+*.pt binary
+# PowerShell スクリプトは Windows 側で実行するため CRLF
+*.ps1 text eol=crlf

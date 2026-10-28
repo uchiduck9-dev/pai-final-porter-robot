@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- YOLO で認識できる物体を選ぶためのテスト用ワールド（照明は arena.sdf と同じ） -->
+<sdf version="1.8">
+  <world name="candidates">
+    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics"/>
+    <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <scene><ambient>0.6 0.6 0.6 1</ambient><background>0.8 0.85 0.9 1</background></scene>
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <direction>0.4 -0.3 -0.85</direction>
+    </light>
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="c"><geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry></collision>
+        <visual name="v"><geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+      </link>
+    </model>
+    <include><name>bicycle</name><static>true</static><pose>2.3 0.6 0 0 0 0</pose><uri>https://fuel.gazebosim.org/1.0/athackst/models/bicycle</uri></include>
+    <include><name>suitcase2</name><static>true</static><pose>2.3 -0.7 0 0 0 0.5</pose><uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Suitcase2</uri></include>
+    <include><name>minisofa</name><static>true</static><pose>-2.3 -0.8 0 0 0 -1.57</pose><uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/MiniSofa</uri></include>
+    <include><name>bench</name><static>true</static><pose>-2.3 0.9 0 0 0 1.57</pose><uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/FoodCourtBenchShort</uri></include>
+    <include><uri>model://diffbot</uri><name>diffbot</name><pose>0 0 0.06 0 0 0</pose></include>
+  </world>
+</sdf>

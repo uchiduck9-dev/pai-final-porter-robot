@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<!-- 壁で囲ったアリーナ。色の違う箱を置き、後でカメラ＋AIで見つける対象にする -->
+<sdf version="1.8">
+  <world name="arena">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+
+    <plugin filename="ignition-gazebo-physics-system" name="ignition::gazebo::systems::Physics"/>
+    <plugin filename="ignition-gazebo-user-commands-system" name="ignition::gazebo::systems::UserCommands"/>
+    <plugin filename="ignition-gazebo-scene-broadcaster-system" name="ignition::gazebo::systems::SceneBroadcaster"/>
+    <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <scene>
+      <ambient>0.6 0.6 0.6 1</ambient>
+      <background>0.8 0.85 0.9 1</background>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>0.4 -0.3 -0.85</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><plane><normal>0 0 1</normal><size>20 20</size></plane></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- 外周の壁（6m x 6m） -->
+    <model name="walls">
+      <static>true</static>
+      <link name="link">
+        <collision name="north"><pose>0 3 0.25 0 0 0</pose><geometry><box><size>6.2 0.1 0.5</size></box></geometry></collision>
+        <visual name="north"><pose>0 3 0.25 0 0 0</pose><geometry><box><size>6.2 0.1 0.5</size></box></geometry><material><ambient>0.85 0.8 0.7 1</ambient><diffuse>0.85 0.8 0.7 1</diffuse></material></visual>
+        <collision name="south"><pose>0 -3 0.25 0 0 0</pose><geometry><box><size>6.2 0.1 0.5</size></box></geometry></collision>
+        <visual name="south"><pose>0 -3 0.25 0 0 0</pose><geometry><box><size>6.2 0.1 0.5</size></box></geometry><material><ambient>0.85 0.8 0.7 1</ambient><diffuse>0.85 0.8 0.7 1</diffuse></material></visual>
+        <collision name="east"><pose>3 0 0.25 0 0 0</pose><geometry><box><size>0.1 6.2 0.5</size></box></geometry></collision>
+        <visual name="east"><pose>3 0 0.25 0 0 0</pose><geometry><box><size>0.1 6.2 0.5</size></box></geometry><material><ambient>0.85 0.8 0.7 1</ambient><diffuse>0.85 0.8 0.7 1</diffuse></material></visual>
+        <collision name="west"><pose>-3 0 0.25 0 0 0</pose><geometry><box><size>0.1 6.2 0.5</size></box></geometry></collision>
+        <visual name="west"><pose>-3 0 0.25 0 0 0</pose><geometry><box><size>0.1 6.2 0.5</size></box></geometry><material><ambient>0.85 0.8 0.7 1</ambient><diffuse>0.85 0.8 0.7 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="red_box">
+      <static>true</static>
+      <pose>2.0 1.2 0.2 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.4 0.4 0.4</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.4 0.4 0.4</size></box></geometry>
+          <material><ambient>0.9 0.1 0.1 1</ambient><diffuse>0.9 0.1 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="green_box">
+      <static>true</static>
+      <pose>-1.5 -1.8 0.2 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.4 0.4 0.4</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.4 0.4 0.4</size></box></geometry>
+          <material><ambient>0.1 0.8 0.1 1</ambient><diffuse>0.1 0.8 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+    <model name="yellow_cylinder">
+      <static>true</static>
+      <pose>1.0 -1.5 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><cylinder><radius>0.2</radius><length>0.5</length></cylinder></geometry></collision>
+        <visual name="v"><geometry><cylinder><radius>0.2</radius><length>0.5</length></cylinder></geometry>
+          <material><ambient>0.9 0.8 0.1 1</ambient><diffuse>0.9 0.8 0.1 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- 段階2用の障害物: スーツケースから椅子へ向かう通り道の真ん中に置く。
+         カメラ（高さ約46cm）から椅子が見えるよう、低めの箱にする -->
+    <model name="obstacle_box">
+      <static>true</static>
+      <pose>-0.45 0.75 0.15 0 0 0.3</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.5 0.5 0.3</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.5 0.5 0.3</size></box></geometry>
+          <material><ambient>0.6 0.45 0.25 1</ambient><diffuse>0.6 0.45 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- YOLO（COCO）で認識できる物体。Gazebo Fuel の OpenRobotics モデルをパッケージ内にコピーして使用 -->
+    <include>
+      <uri>model://suitcase</uri>
+      <name>suitcase</name>
+      <pose>1.8 -0.5 0 0 0 0.5</pose>
+    </include>
+    <include>
+      <uri>model://folding_chair</uri>
+      <name>folding_chair</name>
+      <static>true</static>
+      <pose>-2.0 1.8 0 0 0 0.84</pose>
+    </include>
+
+    <include>
+      <uri>model://diffbot</uri>
+      <name>diffbot</name>
+      <pose>0 0 0.06 0 0 0</pose>
+    </include>
+  </world>
+</sdf>

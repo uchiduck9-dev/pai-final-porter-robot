@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<!-- 差動二輪ロボット: 本体 + 左右駆動輪 + キャスター + 前方カメラ + 2D LiDAR -->
+<sdf version="1.8">
+  <model name="diffbot">
+    <pose>0 0 0.06 0 0 0</pose>
+
+    <link name="base_link">
+      <inertial>
+        <mass>2.0</mass>
+        <inertia>
+          <ixx>0.012</ixx><iyy>0.021</iyy><izz>0.028</izz>
+          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><box><size>0.30 0.22 0.08</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>0.30 0.22 0.08</size></box></geometry>
+        <material>
+          <ambient>0.1 0.3 0.8 1</ambient>
+          <diffuse>0.1 0.3 0.8 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- 前方カメラ（AI 物体検出の入力）。床から約46cmのマスト上に、やや下向きに取り付ける -->
+      <sensor name="front_camera" type="camera">
+        <pose>0.10 0 0.40 0 0.15 0</pose>
+        <camera>
+          <horizontal_fov>1.2</horizontal_fov>
+          <image><width>640</width><height>480</height></image>
+          <clip><near>0.05</near><far>30</far></clip>
+        </camera>
+        <always_on>1</always_on>
+        <update_rate>15</update_rate>
+        <visualize>true</visualize>
+        <topic>camera/image_raw</topic>
+      </sensor>
+
+      <!-- 2D LiDAR（障害物回避用） -->
+      <sensor name="lidar" type="gpu_lidar">
+        <pose>0.05 0 0.07 0 0 0</pose>
+        <topic>scan</topic>
+        <update_rate>10</update_rate>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>360</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+          </scan>
+          <range><min>0.12</min><max>8.0</max><resolution>0.01</resolution></range>
+        </lidar>
+        <always_on>1</always_on>
+        <visualize>true</visualize>
+      </sensor>
+    </link>
+
+    <!-- カメラ用マストとカメラ本体（見た目のみ） -->
+    <link name="camera_mount">
+      <pose>0.10 0 0.04 0 0 0</pose>
+      <inertial><mass>0.05</mass></inertial>
+      <visual name="mast">
+        <pose>0 0 0.16 0 0 0</pose>
+        <geometry><cylinder><radius>0.012</radius><length>0.32</length></cylinder></geometry>
+        <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material>
+      </visual>
+      <visual name="camera_head">
+        <pose>0 0 0.36 0 0.15 0</pose>
+        <geometry><box><size>0.05 0.09 0.04</size></box></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material>
+      </visual>
+    </link>
+    <joint name="camera_mount_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>camera_mount</child>
+    </joint>
+
+    <!-- 荷台: スーツケース（0.35 x 0.21 m）が収まるよう、本体の後ろへ張り出した板 -->
+    <link name="cargo_deck">
+      <pose>-0.14 0 0.05 0 0 0</pose>
+      <inertial>
+        <mass>0.2</mass>
+        <!-- 直方体の慣性: m/12 * (b^2 + c^2) など（0.2kg, 0.42 x 0.26 x 0.02 m） -->
+        <inertia><ixx>0.001133</ixx><iyy>0.002947</iyy><izz>0.004067</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><box><size>0.42 0.26 0.02</size></box></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><box><size>0.42 0.26 0.02</size></box></geometry>
+        <material><ambient>0.25 0.25 0.28 1</ambient><diffuse>0.25 0.25 0.28 1</diffuse></material>
+      </visual>
+      <!-- 荷台のふち（後ろと左右）。荷物の位置が分かりやすいように -->
+      <visual name="rail_back">
+        <pose>-0.205 0 0.02 0 0 0</pose>
+        <geometry><box><size>0.01 0.26 0.03</size></box></geometry>
+        <material><ambient>0.9 0.6 0.1 1</ambient><diffuse>0.9 0.6 0.1 1</diffuse></material>
+      </visual>
+      <visual name="rail_left">
+        <pose>-0.03 0.125 0.02 0 0 0</pose>
+        <geometry><box><size>0.36 0.01 0.03</size></box></geometry>
+        <material><ambient>0.9 0.6 0.1 1</ambient><diffuse>0.9 0.6 0.1 1</diffuse></material>
+      </visual>
+      <visual name="rail_right">
+        <pose>-0.03 -0.125 0.02 0 0 0</pose>
+        <geometry><box><size>0.36 0.01 0.03</size></box></geometry>
+        <material><ambient>0.9 0.6 0.1 1</ambient><diffuse>0.9 0.6 0.1 1</diffuse></material>
+      </visual>
+    </link>
+    <joint name="cargo_deck_joint" type="fixed">
+      <parent>base_link</parent>
+      <child>cargo_deck</child>
+    </joint>
+
+    <!-- 荷台の下の補助輪（転倒防止）。普段は床から5mm浮かせ、後ろに傾いたときだけ接地する。
+         常に接地させると荷物の重さが補助輪に逃げ、駆動輪が滑って進まなくなるため -->
+    <link name="rear_caster">
+      <pose>-0.30 0 -0.035 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia><ixx>0.00004</ixx><iyy>0.00004</iyy><izz>0.00004</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><sphere><radius>0.02</radius></sphere></geometry>
+        <surface><friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction></surface>
+      </collision>
+      <visual name="visual">
+        <geometry><sphere><radius>0.02</radius></sphere></geometry>
+      </visual>
+      <!-- 荷台と補助輪をつなぐ支柱（見た目のみ） -->
+      <visual name="strut">
+        <pose>0 0 0.04 0 0 0</pose>
+        <geometry><cylinder><radius>0.008</radius><length>0.06</length></cylinder></geometry>
+        <material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material>
+      </visual>
+    </link>
+    <joint name="rear_caster_joint" type="ball">
+      <parent>base_link</parent>
+      <child>rear_caster</child>
+    </joint>
+
+    <link name="left_wheel">
+      <pose>-0.05 0.13 -0.01 -1.5707 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia><ixx>0.0004</ixx><iyy>0.0004</iyy><izz>0.0006</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+        <material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="right_wheel">
+      <pose>-0.05 -0.13 -0.01 -1.5707 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia><ixx>0.0004</ixx><iyy>0.0004</iyy><izz>0.0006</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+      </collision>
+      <visual name="visual">
+        <geometry><cylinder><radius>0.05</radius><length>0.03</length></cylinder></geometry>
+        <material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+      </visual>
+    </link>
+
+    <link name="caster">
+      <pose>0.10 0 -0.04 0 0 0</pose>
+      <inertial>
+        <mass>0.1</mass>
+        <inertia><ixx>0.00004</ixx><iyy>0.00004</iyy><izz>0.00004</izz><ixy>0</ixy><ixz>0</ixz><iyz>0</iyz></inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry><sphere><radius>0.02</radius></sphere></geometry>
+        <surface><friction><ode><mu>0.0</mu><mu2>0.0</mu2></ode></friction></surface>
+      </collision>
+      <visual name="visual">
+        <geometry><sphere><radius>0.02</radius></sphere></geometry>
+      </visual>
+    </link>
+
+    <joint name="left_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>left_wheel</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
+    </joint>
+    <joint name="right_wheel_joint" type="revolute">
+      <parent>base_link</parent>
+      <child>right_wheel</child>
+      <axis><xyz>0 0 1</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
+    </joint>
+    <joint name="caster_joint" type="ball">
+      <parent>base_link</parent>
+      <child>caster</child>
+    </joint>
+
+    <plugin filename="ignition-gazebo-diff-drive-system" name="ignition::gazebo::systems::DiffDrive">
+      <left_joint>left_wheel_joint</left_joint>
+      <right_joint>right_wheel_joint</right_joint>
+      <wheel_separation>0.26</wheel_separation>
+      <wheel_radius>0.05</wheel_radius>
+      <max_linear_acceleration>1.0</max_linear_acceleration>
+      <topic>cmd_vel</topic>
+      <odom_topic>odom</odom_topic>
+      <frame_id>odom</frame_id>
+      <child_frame_id>base_link</child_frame_id>
+      <odom_publish_frequency>30</odom_publish_frequency>
+    </plugin>
+
+    <!-- 段階3: スーツケースをロボットに固定する／外すための仕組み。
+         /porter/attach で固定、/porter/detach で解除、状態は /porter/attach_state に出る -->
+    <plugin filename="ignition-gazebo-detachable-joint-system" name="ignition::gazebo::systems::DetachableJoint">
+      <parent_link>base_link</parent_link>
+      <child_model>suitcase</child_model>
+      <child_link>body</child_link>
+      <attach_topic>/porter/attach</attach_topic>
+      <detach_topic>/porter/detach</detach_topic>
+      <output_topic>/porter/attach_state</output_topic>
+      <suppress_child_warning>true</suppress_child_warning>
+    </plugin>
+  </model>
+</sdf>
