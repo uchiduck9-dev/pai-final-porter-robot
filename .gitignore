@@ -15,3 +15,6 @@ __pycache__/
 tools/test_logs/
 /camera_check.png
 /yolo_check.png
+
+# レポートの下書き（GitHub には上げない）
+report_draft/
